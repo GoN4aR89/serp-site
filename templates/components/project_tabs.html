@@ -1,0 +1,37 @@
+{% if project %}
+<div class="project-tabs">
+    <div class="project-info">
+        <div class="project-name">
+            <i class="fas fa-folder-open"></i>
+            {{ project.name }}
+        </div>
+        <div class="project-meta">
+            Создан: {{ project.created_at.strftime('%d.%m.%Y') }}
+        </div>
+    </div>
+    
+    <div class="tabs">
+        <a href="{{ url_for('index', project_id=project.id) }}" class="tab {% if request.endpoint == 'index' %}active{% endif %}">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <span>Загрузка</span>
+        </a>
+        <a href="{{ url_for('profile', project_id=project.id) }}" class="tab {% if request.endpoint == 'profile' %}active{% endif %}">
+            <i class="fas fa-history"></i>
+            <span>История</span>
+        </a>
+        {# В будущем добавить: #}
+        {# <a href="#" class="tab"> #}
+        {#     <i class="fas fa-table"></i> #}
+        {#     <span>Таблицы</span> #}
+        {# </a> #}
+        {# <a href="#" class="tab"> #}
+        {#     <i class="fas fa-file-powerpoint"></i> #}
+        {#     <span>Отчеты</span> #}
+        {# </a> #}
+        {# <a href="#" class="tab"> #}
+        {#     <i class="fas fa-cog"></i> #}
+        {#     <span>Настройки</span> #}
+        {# </a> #}
+    </div>
+</div>
+{% endif %}

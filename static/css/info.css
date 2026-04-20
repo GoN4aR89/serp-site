@@ -1,0 +1,188 @@
+/* ============================================
+   INFO STYLES - Стили для info.html
+   ============================================ */
+
+/* Специфичная переменная для границ */
+:root {
+    --border-color: #dee2e6;
+}
+
+body.dark-theme {
+    --border-color: #4a5c6e;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-gradient);
+    color: var(--text-color);
+    padding: 2rem 1rem;
+    transition: background 0.3s, color 0.3s;
+}
+
+/* Header */
+.site-header {
+    max-width: 1000px;
+    margin: 0 auto 1rem auto;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    background: var(--card-bg);
+    border-radius: 40px;
+    padding: 6px 16px;
+    box-shadow: var(--box-shadow);
+}
+
+.site-header .user-email {
+    color: var(--text-color);
+    margin-right: 6px;
+    font-size: 0.85rem;
+}
+
+.header-button {
+    background: transparent;
+    border-radius: 30px;
+    padding: 4px 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--primary);
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    text-decoration: none;
+    color: var(--text-color);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.header-button i { color: var(--accent); font-size: 0.9rem; }
+.header-button:hover { background: var(--primary); color: white; }
+.header-button:hover i { color: white; }
+
+.header-button.admin-link {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: white;
+}
+.header-button.admin-link i { color: white; }
+.header-button.admin-link:hover { background-color: #e68a00; color: white; }
+.header-button.admin-link:hover i { color: white; }
+
+/* Container */
+.container {
+    max-width: 1000px;
+    margin: auto;
+    background: var(--card-bg);
+    border-radius: 20px;
+    box-shadow: var(--box-shadow);
+    padding: 2.5rem;
+}
+
+h1 { color: var(--primary); font-weight: 700; margin-bottom: 1.5rem; }
+h2 { color: var(--accent); font-weight: 600; margin-top: 2rem; margin-bottom: 1rem; border-bottom: 2px solid var(--accent-light); padding-bottom: 0.5rem; }
+h3 { color: var(--primary-dark); font-weight: 600; margin-top: 1.5rem; }
+
+/* Color sample for documentation */
+.color-sample {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+/* Example table */
+.example-table {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1rem;
+    overflow-x: auto;
+}
+
+.example-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.example-table th { background: var(--primary); color: white; padding: 8px; text-align: center; }
+.example-table td { padding: 6px 8px; border: 1px solid #dee2e6; white-space: nowrap; }
+.example-table td:nth-child(n+3) { color: #000000 !important; }
+.example-table .client-site { background-color: #fff2cc; }
+.example-table .positive { background-color: #d9ead3; }
+.example-table .neutral { background-color: #c9daf8; }
+.example-table .negative { background-color: #f4cccc; }
+.example-table .irrelevant { background-color: #cccccc; }
+
+/* Buttons */
+.btn-back {
+    background-color: var(--primary);
+    color: white;
+    border-radius: 30px;
+    padding: 10px 25px;
+    font-weight: 600;
+    margin-top: 2rem;
+}
+
+.btn-back:hover { background-color: var(--primary-dark); color: white; }
+
+/* Dark theme overrides */
+body.dark-theme .container { background: var(--card-bg); }
+body.dark-theme .accordion-item { background-color: var(--card-bg); border-color: var(--border-color); }
+body.dark-theme .accordion-button { background-color: var(--card-bg); color: var(--text-color); }
+body.dark-theme .accordion-button:not(.collapsed) { background-color: var(--primary-dark); color: white; }
+body.dark-theme .accordion-body { background-color: var(--card-bg); color: var(--text-color); }
+body.dark-theme .accordion-button::after { filter: invert(1); }
+
+/* Responsive */
+@media (max-width: 700px) {
+    .site-header { justify-content: center; gap: 6px; }
+    .header-button { padding: 4px 10px; font-size: 0.8rem; white-space: nowrap; }
+    .site-header .user-email { width: 100%; text-align: center; margin-bottom: 4px; }
+    .theme-button .full-text { display: none; }
+    .theme-button .short-text { display: inline; }
+    body { padding: 1rem 0.5rem; }
+    .container { padding: 1.5rem; border-radius: 15px; }
+    h1 { font-size: 1.5rem; margin-bottom: 1rem; }
+    h2 { font-size: 1.25rem; margin-top: 1.5rem; }
+    h3 { font-size: 1.1rem; }
+    .example-table table { font-size: 0.8rem; }
+    .example-table th, .example-table td { padding: 4px; }
+}
+
+@media (max-width: 600px) {
+    body { padding: 0.75rem; }
+    .site-header { margin: 0 auto 0.75rem; padding: 4px 12px; gap: 4px; }
+    .header-button { padding: 3px 8px; font-size: 0.75rem; min-width: 30px; }
+    .header-button span { display: none !important; }
+    .container { padding: 1.25rem; border-radius: 12px; max-width: 100%; }
+    h1 { font-size: 1.25rem; margin-bottom: 0.75rem; }
+    h2 { font-size: 1.1rem; margin-top: 1.25rem; margin-bottom: 0.75rem; }
+    h3 { font-size: 1rem; margin-top: 1rem; }
+    .example-table { padding: 0.75rem; border-radius: 10px; }
+    .example-table table { font-size: 0.75rem; }
+    .example-table th, .example-table td { padding: 3px; }
+    .color-sample { width: 16px; height: 16px; }
+    .btn-back { padding: 0.75rem 1.5rem; font-size: 0.95rem; margin-top: 1.5rem; }
+}
+
+@media (max-width: 480px) {
+    body { padding: 0.5rem; }
+    .site-header { margin: 0 auto 0.5rem; padding: 3px 8px; gap: 2px; border-radius: 25px; }
+    .header-button { padding: 2px 6px; font-size: 0.65rem; min-width: 26px; }
+    .container { padding: 1rem; border-radius: 10px; }
+    h1 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+    h2 { font-size: 1rem; margin-top: 1rem; margin-bottom: 0.5rem; }
+    h3 { font-size: 0.95rem; margin-top: 0.75rem; }
+    .example-table table { font-size: 0.7rem; }
+    .example-table th, .example-table td { padding: 2px; }
+    .btn-back { padding: 0.65rem 1.25rem; font-size: 0.85rem; margin-top: 1rem; }
+}
+
+@media (min-width: 701px) {
+    .theme-button .short-text { display: none; }
+}

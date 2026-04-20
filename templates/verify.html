@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Подтверждение регистрации{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/verify.css') }}?v={{ version }}">
+{% endblock %}
+
+{% block content %}
+{% include 'components/simple_header.html' %}
+<div class="container">
+    <div class="card">
+        <h1><i class="fas fa-envelope me-2" style="color: var(--accent);"></i>Подтверждение email</h1>
+        <p>На адрес <strong>{{ email }}</strong> отправлен 6-значный код подтверждения. Введите его ниже.</p>
+
+        <form method="post">
+            <div class="mb-3">
+                <label for="code" class="form-label">Код подтверждения</label>
+                <input type="text" class="form-control code-input" id="code" name="code" required maxlength="6" pattern="\d{6}" autocomplete="off">
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Подтвердить</button>
+        </form>
+        <div class="text-center mt-3">
+            <small class="text-muted">Код действителен 1 час. Если письмо не пришло, проверьте папку «Спам».</small>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}SERP Comparator — анализ тональности{% endblock %}
+
+{% block content %}
+{% include 'components/project_tabs.html' %}
+<div class="main-card">
+    <h1>
+        <i class="fas fa-chart-line"></i>
+        SERP Comparator
+    </h1>
+
+    <div id="loading">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Загрузка...</span>
+        </div>
+        <p class="mt-2 fw-semibold">Обрабатываем файлы...</p>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" onsubmit="showLoading()">
+        <div class="file-input-group">
+            <label>Файл 1 (старая дата)</label>
+            <div class="custom-file-upload" onclick="document.getElementById('file1-input').click();">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p class="mb-1 fw-medium">Выберите первый файл</p>
+                <input type="file" name="file1" id="file1-input" accept=".xlsx" class="d-none" required>
+            </div>
+            <div id="file1-name" class="file-indicator"></div>
+        </div>
+
+        <div class="file-input-group">
+            <label>Файл 2 (новая дата)</label>
+            <div class="custom-file-upload" onclick="document.getElementById('file2-input').click();">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p class="mb-1 fw-medium">Выберите второй файл</p>
+                <input type="file" name="file2" id="file2-input" accept=".xlsx" class="d-none" required>
+            </div>
+            <div id="file2-name" class="file-indicator"></div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-upload me-2"></i>Загрузить файлы</button>
+    </form>
+
+    {% if file1_loaded and file2_loaded %}
+        <div class="mt-4">
+            <h3 class="fw-semibold mb-3" style="color: var(--primary-dark);">Загруженные файлы:</h3>
+            <div class="file-name">
+                <i class="fas fa-file-excel me-2"></i>
+                <span>Файл 1: {{ file1_name }}</span>
+            </div>
+            <div class="file-name">
+                <i class="fas fa-file-excel me-2"></i>
+                <span>Файл 2: {{ file2_name }}</span>
+            </div>
+
+            {% if report_text1 and report_text2 %}
+                <div class="two-columns">
+                    <div class="card-analytics">
+                        <h5 class="fw-bold"><i class="fas fa-chart-pie me-2"></i>Анализ первого файла</h5>
+                        <pre>{{ report_text1 }}</pre>
+                    </div>
+                    <div class="card-analytics">
+                        <h5 class="fw-bold"><i class="fas fa-chart-pie me-2"></i>Анализ второго файла</h5>
+                        <pre>{{ report_text2 }}</pre>
+                    </div>
+                </div>
+            {% endif %}
+
+            <button id="compare-btn" class="btn btn-success w-100 mt-3"><i class="fas fa-chart-simple me-2"></i>Сравнить</button>
+            <a href="{{ url_for('clear_files') }}" class="btn btn-outline-danger w-100 mt-2"><i class="fas fa-trash-alt me-2"></i>Очистить файлы</a>
+            
+            <div id="compare-progress" class="progress-wrapper" style="display: none;">
+                <div class="progress">
+                    <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                </div>
+                <p class="progress-text">Анализ данных...</p>
+            </div>
+        </div>
+    {% endif %}
+
+    <footer>
+        <i class="fas fa-cog me-1"></i> SERP Analysis Tool<br>
+        <small class="text-muted">Версия: {{ version }}</small>
+    </footer>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function showLoading() {
+        document.getElementById('loading').style.display = 'block';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const compareBtn = document.getElementById('compare-btn');
+        if (compareBtn) {
+            const progressWrapper = document.getElementById('compare-progress');
+            const progressBar = progressWrapper.querySelector('.progress-bar');
+            const progressText = progressWrapper.querySelector('.progress-text');
+
+            compareBtn.addEventListener('click', function() {
+                progressWrapper.style.display = 'block';
+                progressBar.style.width = '0%';
+                progressText.textContent = 'Загрузка данных...';
+                compareBtn.disabled = true;
+
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += 5;
+                    if (progress <= 90) {
+                        progressBar.style.width = progress + '%';
+                        if (progress === 30) {
+                            progressText.textContent = 'Анализ данных...';
+                        } else if (progress === 60) {
+                            progressText.textContent = 'Построение диаграмм...';
+                        } else if (progress === 90) {
+                            progressText.textContent = 'Финализация...';
+                        }
+                    }
+                }, 150);
+
+                window.location.href = '{{ url_for("compare") }}';
+            });
+        }
+
+        const file1Input = document.getElementById('file1-input');
+        const file1Name = document.getElementById('file1-name');
+        if (file1Input) {
+            file1Input.addEventListener('change', function(e) {
+                const fileName = e.target.files[0]?.name;
+                if (fileName) {
+                    file1Name.innerHTML = '<i class="fas fa-check-circle"></i> Выбран: ' + fileName;
+                } else {
+                    file1Name.innerHTML = '';
+                }
+            });
+        }
+
+        const file2Input = document.getElementById('file2-input');
+        const file2Name = document.getElementById('file2-name');
+        if (file2Input) {
+            file2Input.addEventListener('change', function(e) {
+                const fileName = e.target.files[0]?.name;
+                if (fileName) {
+                    file2Name.innerHTML = '<i class="fas fa-check-circle"></i> Выбран: ' + fileName;
+                } else {
+                    file2Name.innerHTML = '';
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

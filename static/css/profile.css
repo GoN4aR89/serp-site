@@ -1,0 +1,226 @@
+/* ============================================
+   PROFILE STYLES - Стили для profile.html
+   ============================================ */
+
+/* Специфичные переменные для кнопок */
+:root {
+    --border-color: #dee2e6;
+    --dropdown-bg: white;
+    --dropdown-border: #dee2e6;
+    --dropdown-item-hover: #f8f9fa;
+    --btn-success-color: #ffffff;
+    --btn-primary-color: #ffffff;
+    --btn-secondary-color: #ffffff;
+    --btn-warning-color: #000000;
+    --btn-danger-color: #ffffff;
+}
+
+body.dark-theme {
+    --border-color: #4a5c6e;
+    --dropdown-bg: #2a3a4a;
+    --dropdown-border: #4a5c6e;
+    --dropdown-item-hover: #3d566e;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-gradient);
+    color: var(--text-color);
+    padding: 2rem 1rem;
+    transition: background 0.3s, color 0.3s;
+}
+
+/* Header */
+.site-header {
+    max-width: 1200px;
+    margin: 0 auto 1rem auto;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    background: var(--card-bg);
+    border-radius: 40px;
+    padding: 6px 16px;
+    box-shadow: var(--box-shadow);
+}
+
+.site-header .user-email {
+    color: var(--text-color);
+    margin-right: 6px;
+    font-size: 0.85rem;
+}
+
+.header-button {
+    background: transparent;
+    border-radius: 30px;
+    padding: 4px 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--primary);
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    text-decoration: none;
+    color: var(--text-color);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.header-button i { color: var(--accent); font-size: 0.9rem; }
+.header-button:hover { background: var(--primary); color: white; }
+.header-button:hover i { color: white; }
+
+.header-button.admin-link {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: white;
+}
+.header-button.admin-link i { color: white; }
+.header-button.admin-link:hover { background-color: #e68a00; }
+
+/* Cards */
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+}
+.card strong, .card span, .card p { color: var(--text-color); }
+
+/* Alerts */
+.alert-info {
+    background: var(--card-bg);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+body.dark-theme .alert-info {
+    background: #2a3a4a;
+    color: #e9ecef;
+    border-color: #4a5c6e;
+}
+body.dark-theme .text-muted { color: #adb5bd !important; }
+
+/* Card improvements */
+.card .d-flex.justify-content-between { gap: 1rem; }
+.comparison-info {
+    flex: 1;
+    min-width: 0;
+}
+.comparison-info .text-muted {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+.card .d-flex.flex-wrap {
+    flex-shrink: 0;
+    gap: 0.5rem;
+}
+
+/* Toast notifications */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 99999 !important;
+    max-width: 350px;
+}
+.toast {
+    background: #ffffff !important;
+    border-radius: 12px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.35) !important;
+    border: 1px solid rgba(0,0,0,0.1) !important;
+    overflow: hidden;
+    margin-bottom: 10px;
+    animation: slideIn 0.3s ease;
+    min-width: 300px;
+    display: block !important;
+    visibility: visible !important;
+}
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(100%); }
+    to { opacity: 1; transform: translateX(0); }
+}
+body.dark-theme .toast {
+    background: #1e2a3a !important;
+    border-color: rgba(255,255,255,0.1) !important;
+}
+.toast-success { border-left: 4px solid #28a745; }
+.toast-info { border-left: 4px solid var(--primary); }
+.toast-danger { border-left: 4px solid #dc3545; }
+.toast-body {
+    padding: 14px 18px;
+    color: #212529 !important;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    font-weight: 500;
+}
+body.dark-theme .toast-body { color: #e9ecef !important; }
+.toast-close {
+    background: none;
+    border: none;
+    color: inherit;
+    opacity: 0.5;
+    cursor: pointer;
+    padding: 0;
+    margin-left: auto;
+    font-size: 1.2rem;
+}
+.toast-close:hover { opacity: 1; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .card .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    .comparison-info .text-muted {
+        white-space: normal;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .card .d-flex.flex-wrap {
+        justify-content: flex-start;
+        width: 100%;
+    }
+}
+
+@media (max-width: 700px) {
+    .site-header { justify-content: center; gap: 6px; }
+    .header-button { padding: 4px 10px; font-size: 0.8rem; white-space: nowrap; }
+    .site-header .user-email { width: 100%; text-align: center; margin-bottom: 4px; }
+    body { padding: 1rem 0.5rem; }
+    h1 { font-size: 1.5rem; margin-bottom: 1.25rem; }
+    .container { max-width: 100%; padding: 0 0.5rem; }
+    .card { border-radius: 15px; padding: 1rem; }
+}
+
+@media (max-width: 600px) {
+    body { padding: 0.5rem; }
+    .site-header { margin: 0 auto 0.75rem; padding: 4px 12px; gap: 4px; }
+    .header-button { padding: 3px 8px; font-size: 0.75rem; min-width: 32px; }
+    .header-button span { display: none !important; }
+    .site-header .user-email { font-size: 0.75rem; }
+    h1 { font-size: 1.25rem; margin-bottom: 1rem; }
+    .container { max-width: 100%; padding: 0; }
+    .card { border-radius: 12px; padding: 0.75rem; margin-bottom: 0.75rem; }
+    .card strong, .card p { font-size: 0.9rem; }
+    .btn-delete { margin-left: 0; margin-top: 0.5rem; }
+    .dropdown-item { padding: 5px 12px; font-size: 0.8rem; }
+    .alert { padding: 0.75rem; font-size: 0.9rem; margin-bottom: 0.75rem; }
+}
+
+@media (max-width: 480px) {
+    body { padding: 0.5rem; }
+    .site-header { margin: 0 auto 0.5rem; padding: 3px 8px; gap: 3px; border-radius: 25px; }
+    .header-button { padding: 2px 6px; font-size: 0.7rem; min-width: 28px; }
+    h1 { font-size: 1.1rem; margin-bottom: 0.75rem; }
+    .card { padding: 0.5rem; border-radius: 10px; margin-bottom: 0.5rem; }
+    .card strong, .card p { font-size: 0.85rem; }
+    .alert { padding: 0.5rem; font-size: 0.8rem; }
+}

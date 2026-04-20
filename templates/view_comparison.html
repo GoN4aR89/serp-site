@@ -1,0 +1,641 @@
+{% extends 'base.html' %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Manually toggle dropdowns on click
+    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+    dropdownToggles.forEach(function(toggle) {
+        toggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Close all other dropdowns first
+            document.querySelectorAll('.dropdown-menu.show').forEach(function(menu) {
+                if (menu !== toggle.nextElementSibling) {
+                    menu.classList.remove('show');
+                    const otherToggle = menu.previousElementSibling;
+                    if (otherToggle) otherToggle.setAttribute('aria-expanded', 'false');
+                }
+            });
+            
+            // Toggle current dropdown
+            const menu = toggle.nextElementSibling;
+            if (menu.classList.contains('show')) {
+                menu.classList.remove('show');
+                toggle.setAttribute('aria-expanded', 'false');
+            } else {
+                menu.classList.add('show');
+                toggle.setAttribute('aria-expanded', 'true');
+            }
+        });
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.dropdown')) {
+            document.querySelectorAll('.dropdown-menu.show').forEach(function(menu) {
+                menu.classList.remove('show');
+                const toggle = menu.previousElementSibling;
+                if (toggle) toggle.setAttribute('aria-expanded', 'false');
+            });
+        }
+    });
+});
+</script>
+{% endblock %}
+
+{% block title %}Просмотр сравнения{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/view_comparison.css') }}?v={{ version }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/compare.css') }}?v={{ version }}">
+<style>
+    /* Force dropdown menu visibility when show class is present */
+    .dropdown-menu.show {
+        display: block !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('profile') }}" class="btn-back"><i class="fas fa-arrow-left me-2"></i>Назад к истории</a>
+
+<div class="card">
+    <h1><i class="fas fa-chart-simple me-2" style="color: var(--accent);"></i>Сохранённое сравнение</h1>
+    <p><strong>Дата:</strong> {{ comp.date.strftime('%d.%m.%Y %H:%M') }}</p>
+    <p><strong>Файл 1:</strong> {{ comp.file1_name }}</p>
+    <p><strong>Файл 2:</strong> {{ comp.file2_name }}</p>
+</div>
+
+        <div class="button-row">
+            <div class="dropdown">
+                <button class="btn btn-yandex dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fab fa-yandex me-2"></i>Яндекс
+                </button>
+                <ul class="dropdown-menu">
+                    {% if comp.yandex_excel_path %}
+                    <li><a class="dropdown-item" href="{{ url_for('download_report', path=comp.yandex_excel_path) }}"><i class="fas fa-file-excel text-success"></i>Яндекс (ТОП-20/10) – Excel</a></li>
+                    {% endif %}
+                    {% if comp.url_y_excel_path %}
+                    <li><a class="dropdown-item" href="{{ url_for('download_report', path=comp.url_y_excel_path) }}"><i class="fas fa-file-excel text-success"></i>URL Stats Яндекс – Excel</a></li>
+                    {% endif %}
+                    {% if comp.url_combined_excel_path %}
+                    <li><a class="dropdown-item" href="{{ url_for('download_report', path=comp.url_combined_excel_path) }}"><i class="fas fa-file-excel text-success"></i>URL Stats Яндекс+Google – Excel</a></li>
+                    {% endif %}
+                    {% if comp.summary_y20_path %}
+                    <li><a class="dropdown-item" href="{{ url_for('download_report', path=comp.summary_y20_path) }}"><i class="fas fa-file-excel text-warning"></i>Summary Яндекс ТОП-20</a></li>
+                    {% endif %}
+                    {% if comp.summary_y10_path %}
+                    <li><a class="dropdown-item" href="{{ url_for('download_report', path=comp.summary_y10_path) }}"><i class="fas fa-file-excel text-warning"></i>Summary Яндекс ТОП-10</a></li>
+                    {% endif %}
+                    {% if comp.analysis_y20_path %}
+                    <li><a class="dropdown-item" href="{{ url_for('download_report', path=comp.analysis_y20_path) }}"><i class="fas fa-chart-line text-info"></i>Аналитика Яндекс (ТОП-20)</a></li>
+                    {% endif %}
+                    {% if comp.analysis_y10_path %}
+                    <li><a class="dropdown-item" href="{{ url_for('download_report', path=comp.analysis_y10_path) }}"><i class="fas fa-chart-line text-info"></i>Аналитика Яндекс (ТОП-10)</a></li>
+                    {% endif %}
+                    <li><hr class="dropdown-divider"></li>
+                    {% if comp.grid_y10_pptx_path %}
+                    <li><a class="dropdown-item" href="{{ url_for('download_report', path=comp.grid_y10_pptx_path) }}"><i class="fas fa-file-powerpoint text-danger"></i>Сетка ТОП-10 (PowerPoint)</a></li>
+                    {% endif %}
+                    {% if comp.chart_y20_pptx_path %}
+                    <li><a class="dropdown-item" href="{{ chart_y20_pptx or '#' }}"><i class="fas fa-file-powerpoint text-danger"></i>Диаграмма Яндекс ТОП-20 (PPTX)</a></li>
+                    {% endif %}
+                    {% if comp.chart_y10_pptx_path %}
+                    <li><a class="dropdown-item" href="{{ chart_y10_pptx or '#' }}"><i class="fas fa-file-powerpoint text-danger"></i>Диаграмма Яндекс ТОП-10 (PPTX)</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            <div class="dropdown">
+                <button class="btn btn-google dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fab fa-google me-2"></i>Google
+                </button>
+                <ul class="dropdown-menu">
+                    {% if comp.google_excel_path %}
+                    <li><a class="dropdown-item" href="{{ url_for('download_report', path=comp.google_excel_path) }}"><i class="fas fa-file-excel text-success"></i>Google (ТОП-20/10) – Excel</a></li>
+                    {% endif %}
+                    {% if comp.url_g_excel_path %}
+                    <li><a class="dropdown-item" href="{{ url_for('download_report', path=comp.url_g_excel_path) }}"><i class="fas fa-file-excel text-success"></i>URL Stats Google – Excel</a></li>
+                    {% endif %}
+                    {% if comp.url_combined_excel_path %}
+                    <li><a class="dropdown-item" href="{{ url_for('download_report', path=comp.url_combined_excel_path) }}"><i class="fas fa-file-excel text-success"></i>URL Stats Яндекс+Google – Excel</a></li>
+                    {% endif %}
+                    {% if comp.summary_g20_path %}
+                    <li><a class="dropdown-item" href="{{ url_for('download_report', path=comp.summary_g20_path) }}"><i class="fas fa-file-excel text-warning"></i>Summary Google ТОП-20</a></li>
+                    {% endif %}
+                    {% if comp.summary_g10_path %}
+                    <li><a class="dropdown-item" href="{{ url_for('download_report', path=comp.summary_g10_path) }}"><i class="fas fa-file-excel text-warning"></i>Summary Google ТОП-10</a></li>
+                    {% endif %}
+                    {% if comp.analysis_g20_path %}
+                    <li><a class="dropdown-item" href="{{ url_for('download_report', path=comp.analysis_g20_path) }}"><i class="fas fa-chart-line text-info"></i>Аналитика Google (ТОП-20)</a></li>
+                    {% endif %}
+                    {% if comp.analysis_g10_path %}
+                    <li><a class="dropdown-item" href="{{ url_for('download_report', path=comp.analysis_g10_path) }}"><i class="fas fa-chart-line text-info"></i>Аналитика Google (ТОП-10)</a></li>
+                    {% endif %}
+                    <li><hr class="dropdown-divider"></li>
+                    {% if comp.grid_g10_pptx_path %}
+                    <li><a class="dropdown-item" href="{{ url_for('download_report', path=comp.grid_g10_pptx_path) }}"><i class="fas fa-file-powerpoint text-danger"></i>Сетка ТОП-10 (PowerPoint)</a></li>
+                    {% endif %}
+                    {% if comp.chart_g20_pptx_path %}
+                    <li><a class="dropdown-item" href="{{ chart_g20_pptx or '#' }}"><i class="fas fa-file-powerpoint text-danger"></i>Диаграмма Google ТОП-20 (PPTX)</a></li>
+                    {% endif %}
+                    {% if comp.chart_g10_pptx_path %}
+                    <li><a class="dropdown-item" href="{{ chart_g10_pptx or '#' }}"><i class="fas fa-file-powerpoint text-danger"></i>Диаграмма Google ТОП-10 (PPTX)</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            {% if comp.excel_path %}
+            <a href="{{ url_for('download_report', path=comp.excel_path) }}" class="btn btn-excel btn-download">
+                <i class="fas fa-file-excel me-2"></i>Общий отчет
+            </a>
+            {% endif %}
+        </div>
+
+        <!-- СТАРТОВЫЕ ПОКАЗАТЕЛИ -->
+        <div class="card mb-4 mt-3" id="baselineSection">
+            <div class="card-header d-flex justify-content-between align-items-center baseline-section-header">
+                <h3 class="mb-0" style="color: var(--primary); font-size: 1.1rem;">
+                    <i class="fas fa-chart-line me-2"></i>Стартовые показатели
+                </h3>
+                <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#baselineForms" id="baselineToggleBtn">
+                    <i class="fas fa-chevron-right"></i> Развернуть
+                </button>
+            </div>
+            <div class="collapse" id="baselineForms">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <!-- Яндекс ТОП-20 -->
+                        <div class="col-md-6 col-lg-6">
+                            <div class="card baseline-card">
+                                <div class="card-header yandex-header">
+                                    <i class="fab fa-yandex me-2"></i>Яндекс ТОП-20
+                                </div>
+                                <div class="card-body">
+                                    <form class="baseline-form" data-type="yandex_top20" data-comparison-id="{{ comp.id }}">
+                                        <div class="mb-2">
+                                            <select class="form-select form-select-sm input-type" name="input_type">
+                                                <option value="percentage" {{ 'selected' if baseline_metrics.get('yandex_top20',{}).get('input_type')=='percentage' else '' }}>Проценты (%)</option>
+                                                <option value="count" {{ 'selected' if baseline_metrics.get('yandex_top20',{}).get('input_type')=='count' else '' }}>Количество (шт.)</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-2 total-urls-field" style="{{ 'display:block;' if baseline_metrics.get('yandex_top20',{}).get('input_type')=='count' else 'display:none;' }}">
+                                            <label class="form-label small mb-0 text-muted">Всего URL</label>
+                                            <input type="number" class="form-control form-control-sm total-urls" name="total_urls" value="{{ baseline_metrics.get('yandex_top20',{}).get('total_urls') or '' }}" step="10" min="10">
+                                        </div>
+                                        <div class="row g-1">
+                                            <div class="col"><label class="form-label small mb-1 text-muted">Дом. сайт</label><input type="text" class="form-control form-control-sm" name="client_site" value="{{ baseline_metrics.get('yandex_top20',{}).get('client_site_value') or '' }}" placeholder="25%"></div>
+                                            <div class="col"><label class="form-label small mb-1 text-muted">Позитивная</label><input type="text" class="form-control form-control-sm" name="positive" value="{{ baseline_metrics.get('yandex_top20',{}).get('positive_value') or '' }}" placeholder="25%"></div>
+                                            <div class="col"><label class="form-label small mb-1 text-muted">Нейтральная</label><input type="text" class="form-control form-control-sm" name="neutral" value="{{ baseline_metrics.get('yandex_top20',{}).get('neutral_value') or '' }}" placeholder="25%"></div>
+                                            <div class="col"><label class="form-label small mb-1 text-muted">Негативная</label><input type="text" class="form-control form-control-sm" name="negative" value="{{ baseline_metrics.get('yandex_top20',{}).get('negative_value') or '' }}" placeholder="25%"></div>
+                                            <div class="col"><label class="form-label small mb-1 text-muted">Нерелев.</label><input type="text" class="form-control form-control-sm" name="irrelevant" value="{{ baseline_metrics.get('yandex_top20',{}).get('irrelevant_value') or '' }}" placeholder="25%"></div>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-success w-100 mt-2 generate-chart"><i class="fas fa-chart-bar"></i> Создать диаграмму</button>
+                                    </form>
+                                    <div class="mt-2 chart-container-y20 chart-container" style="display:none;">
+                                        <div class="d-flex justify-content-between align-items-center mb-2"><h5 class="fw-bold mb-0" style="color:var(--primary);">Яндекс ТОП-20 Старт</h5><a href="" class="download-chart download-analysis-btn" style="background-color:var(--primary);" title="Скачать"><i class="fas fa-download"></i></a></div>
+                                        <img src="" class="img-fluid rounded border" style="max-height:300px;width:100%;object-fit:contain;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Яндекс ТОП-10 -->
+                        <div class="col-md-6 col-lg-6">
+                            <div class="card baseline-card">
+                                <div class="card-header yandex-header">
+                                    <i class="fab fa-yandex me-2"></i>Яндекс ТОП-10
+                                </div>
+                                <div class="card-body">
+                                    <form class="baseline-form" data-type="yandex_top10" data-comparison-id="{{ comp.id }}">
+                                        <div class="mb-2">
+                                            <select class="form-select form-select-sm input-type" name="input_type">
+                                                <option value="percentage" {{ 'selected' if baseline_metrics.get('yandex_top10',{}).get('input_type')=='percentage' else '' }}>Проценты (%)</option>
+                                                <option value="count" {{ 'selected' if baseline_metrics.get('yandex_top10',{}).get('input_type')=='count' else '' }}>Количество (шт.)</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-2 total-urls-field" style="{{ 'display:block;' if baseline_metrics.get('yandex_top10',{}).get('input_type')=='count' else 'display:none;' }}">
+                                            <label class="form-label small mb-0 text-muted">Всего URL</label>
+                                            <input type="number" class="form-control form-control-sm total-urls" name="total_urls" value="{{ baseline_metrics.get('yandex_top10',{}).get('total_urls') or '' }}" step="10" min="10">
+                                        </div>
+                                        <div class="row g-1">
+                                            <div class="col"><label class="form-label small mb-1 text-muted">Дом. сайт</label><input type="text" class="form-control form-control-sm" name="client_site" value="{{ baseline_metrics.get('yandex_top10',{}).get('client_site_value') or '' }}" placeholder="25%"></div>
+                                            <div class="col"><label class="form-label small mb-1 text-muted">Позитивная</label><input type="text" class="form-control form-control-sm" name="positive" value="{{ baseline_metrics.get('yandex_top10',{}).get('positive_value') or '' }}" placeholder="25%"></div>
+                                            <div class="col"><label class="form-label small mb-1 text-muted">Нейтральная</label><input type="text" class="form-control form-control-sm" name="neutral" value="{{ baseline_metrics.get('yandex_top10',{}).get('neutral_value') or '' }}" placeholder="25%"></div>
+                                            <div class="col"><label class="form-label small mb-1 text-muted">Негативная</label><input type="text" class="form-control form-control-sm" name="negative" value="{{ baseline_metrics.get('yandex_top10',{}).get('negative_value') or '' }}" placeholder="25%"></div>
+                                            <div class="col"><label class="form-label small mb-1 text-muted">Нерелев.</label><input type="text" class="form-control form-control-sm" name="irrelevant" value="{{ baseline_metrics.get('yandex_top10',{}).get('irrelevant_value') or '' }}" placeholder="25%"></div>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-success w-100 mt-2 generate-chart"><i class="fas fa-chart-bar"></i> Создать диаграмму</button>
+                                    </form>
+                                    <div class="mt-2 chart-container-y10 chart-container" style="display:none;">
+                                        <div class="d-flex justify-content-between align-items-center mb-2"><h5 class="fw-bold mb-0" style="color:var(--primary);">Яндекс ТОП-10 Старт</h5><a href="" class="download-chart download-analysis-btn" style="background-color:var(--primary);" title="Скачать"><i class="fas fa-download"></i></a></div>
+                                        <img src="" class="img-fluid rounded border" style="max-height:300px;width:100%;object-fit:contain;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Google ТОП-20 -->
+                        <div class="col-md-6 col-lg-6">
+                            <div class="card baseline-card">
+                                <div class="card-header google-header">
+                                    <i class="fab fa-google me-2"></i>Google ТОП-20
+                                </div>
+                                <div class="card-body">
+                                    <form class="baseline-form" data-type="google_top20" data-comparison-id="{{ comp.id }}">
+                                        <div class="mb-2">
+                                            <select class="form-select form-select-sm input-type" name="input_type">
+                                                <option value="percentage" {{ 'selected' if baseline_metrics.get('google_top20',{}).get('input_type')=='percentage' else '' }}>Проценты (%)</option>
+                                                <option value="count" {{ 'selected' if baseline_metrics.get('google_top20',{}).get('input_type')=='count' else '' }}>Количество (шт.)</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-2 total-urls-field" style="{{ 'display:block;' if baseline_metrics.get('google_top20',{}).get('input_type')=='count' else 'display:none;' }}">
+                                            <label class="form-label small mb-0 text-muted">Всего URL</label>
+                                            <input type="number" class="form-control form-control-sm total-urls" name="total_urls" value="{{ baseline_metrics.get('google_top20',{}).get('total_urls') or '' }}" step="10" min="10">
+                                        </div>
+                                        <div class="row g-1">
+                                            <div class="col"><label class="form-label small mb-1 text-muted">Дом. сайт</label><input type="text" class="form-control form-control-sm" name="client_site" value="{{ baseline_metrics.get('google_top20',{}).get('client_site_value') or '' }}" placeholder="25%"></div>
+                                            <div class="col"><label class="form-label small mb-1 text-muted">Позитивная</label><input type="text" class="form-control form-control-sm" name="positive" value="{{ baseline_metrics.get('google_top20',{}).get('positive_value') or '' }}" placeholder="25%"></div>
+                                            <div class="col"><label class="form-label small mb-1 text-muted">Нейтральная</label><input type="text" class="form-control form-control-sm" name="neutral" value="{{ baseline_metrics.get('google_top20',{}).get('neutral_value') or '' }}" placeholder="25%"></div>
+                                            <div class="col"><label class="form-label small mb-1 text-muted">Негативная</label><input type="text" class="form-control form-control-sm" name="negative" value="{{ baseline_metrics.get('google_top20',{}).get('negative_value') or '' }}" placeholder="25%"></div>
+                                            <div class="col"><label class="form-label small mb-1 text-muted">Нерелев.</label><input type="text" class="form-control form-control-sm" name="irrelevant" value="{{ baseline_metrics.get('google_top20',{}).get('irrelevant_value') or '' }}" placeholder="25%"></div>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-success w-100 mt-2 generate-chart"><i class="fas fa-chart-bar"></i> Создать диаграмму</button>
+                                    </form>
+                                    <div class="mt-2 chart-container-g20 chart-container" style="display:none;">
+                                        <div class="d-flex justify-content-between align-items-center mb-2"><h5 class="fw-bold mb-0" style="color:var(--primary);">Google ТОП-20 Старт</h5><a href="" class="download-chart download-analysis-btn" style="background-color:var(--primary);" title="Скачать"><i class="fas fa-download"></i></a></div>
+                                        <img src="" class="img-fluid rounded border" style="max-height:300px;width:100%;object-fit:contain;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Google ТОП-10 -->
+                        <div class="col-md-6 col-lg-6">
+                            <div class="card baseline-card">
+                                <div class="card-header google-header">
+                                    <i class="fab fa-google me-2"></i>Google ТОП-10
+                                </div>
+                                <div class="card-body">
+                                    <form class="baseline-form" data-type="google_top10" data-comparison-id="{{ comp.id }}">
+                                        <div class="mb-2">
+                                            <select class="form-select form-select-sm input-type" name="input_type">
+                                                <option value="percentage" {{ 'selected' if baseline_metrics.get('google_top10',{}).get('input_type')=='percentage' else '' }}>Проценты (%)</option>
+                                                <option value="count" {{ 'selected' if baseline_metrics.get('google_top10',{}).get('input_type')=='count' else '' }}>Количество (шт.)</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-2 total-urls-field" style="{{ 'display:block;' if baseline_metrics.get('google_top10',{}).get('input_type')=='count' else 'display:none;' }}">
+                                            <label class="form-label small mb-0 text-muted">Всего URL</label>
+                                            <input type="number" class="form-control form-control-sm total-urls" name="total_urls" value="{{ baseline_metrics.get('google_top10',{}).get('total_urls') or '' }}" step="10" min="10">
+                                        </div>
+                                        <div class="row g-1">
+                                            <div class="col"><label class="form-label small mb-1 text-muted">Дом. сайт</label><input type="text" class="form-control form-control-sm" name="client_site" value="{{ baseline_metrics.get('google_top10',{}).get('client_site_value') or '' }}" placeholder="25%"></div>
+                                            <div class="col"><label class="form-label small mb-1 text-muted">Позитивная</label><input type="text" class="form-control form-control-sm" name="positive" value="{{ baseline_metrics.get('google_top10',{}).get('positive_value') or '' }}" placeholder="25%"></div>
+                                            <div class="col"><label class="form-label small mb-1 text-muted">Нейтральная</label><input type="text" class="form-control form-control-sm" name="neutral" value="{{ baseline_metrics.get('google_top10',{}).get('neutral_value') or '' }}" placeholder="25%"></div>
+                                            <div class="col"><label class="form-label small mb-1 text-muted">Негативная</label><input type="text" class="form-control form-control-sm" name="negative" value="{{ baseline_metrics.get('google_top10',{}).get('negative_value') or '' }}" placeholder="25%"></div>
+                                            <div class="col"><label class="form-label small mb-1 text-muted">Нерелев.</label><input type="text" class="form-control form-control-sm" name="irrelevant" value="{{ baseline_metrics.get('google_top10',{}).get('irrelevant_value') or '' }}" placeholder="25%"></div>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-success w-100 mt-2 generate-chart"><i class="fas fa-chart-bar"></i> Создать диаграмму</button>
+                                    </form>
+                                    <div class="mt-2 chart-container-g10 chart-container" style="display:none;">
+                                        <div class="d-flex justify-content-between align-items-center mb-2"><h5 class="fw-bold mb-0" style="color:var(--primary);">Google ТОП-10 Старт</h5><a href="" class="download-chart download-analysis-btn" style="background-color:var(--primary);" title="Скачать"><i class="fas fa-download"></i></a></div>
+                                        <img src="" class="img-fluid rounded border" style="max-height:300px;width:100%;object-fit:contain;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <ul class="nav nav-tabs chart-tabs" id="chartTopTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="top20-tab" data-bs-toggle="tab" data-bs-target="#top20-charts" type="button" role="tab" aria-controls="top20-charts" aria-selected="true">ТОП-20</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="top10-tab" data-bs-toggle="tab" data-bs-target="#top10-charts" type="button" role="tab" aria-controls="top10-charts" aria-selected="false">ТОП-10</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="chartTopTabsContent">
+            <div class="tab-pane fade show active" id="top20-charts" role="tabpanel" aria-labelledby="top20-tab">
+                <div class="chart-row">
+                    {% if comp.chart_y20_path %}
+                    <div class="chart-col"><div class="chart-container"><div style="position: relative;"><h5 class="fw-bold mb-2">Яндекс (ТОП-20)</h5><a href="{{ url_for('download_report', path=comp.chart_y20_path) }}" class="download-analysis-btn" title="Скачать диаграмму"><i class="fas fa-download"></i></a></div><img src="{{ url_for('user_data_file', filename=comp.chart_y20_path.split('user_data/')[1]) }}" alt="Яндекс ТОП-20" onclick="openModal(this)" style="cursor: pointer;"></div></div>
+                    {% endif %}
+                    {% if comp.chart_g20_path %}
+                    <div class="chart-col"><div class="chart-container"><div style="position: relative;"><h5 class="fw-bold mb-2">Google (ТОП-20)</h5><a href="{{ url_for('download_report', path=comp.chart_g20_path) }}" class="download-analysis-btn" title="Скачать диаграмму"><i class="fas fa-download"></i></a></div><img src="{{ url_for('user_data_file', filename=comp.chart_g20_path.split('user_data/')[1]) }}" alt="Google ТОП-20" onclick="openModal(this)" style="cursor: pointer;"></div></div>
+                    {% endif %}
+                    {% if comp.chart_total20_path %}
+                    <div class="chart-col"><div class="chart-container"><div style="position: relative;"><h5 class="fw-bold mb-2">Общая (ТОП-20)</h5><a href="{{ url_for('download_report', path=comp.chart_total20_path) }}" class="download-analysis-btn" title="Скачать диаграмму"><i class="fas fa-download"></i></a></div><img src="{{ url_for('user_data_file', filename=comp.chart_total20_path.split('user_data/')[1]) }}" alt="Общая ТОП-20" onclick="openModal(this)" style="cursor: pointer;"></div></div>
+                    {% endif %}
+                </div>
+                <h3 class="mt-4 mb-3" style="color: var(--primary);">Аналитика ТОП-20</h3>
+                <div class="row">
+                    <div class="col-md-4"><div class="analysis-block">{% if comp.analysis_y20_path %}<a href="{{ url_for('download_report', path=comp.analysis_y20_path) }}" class="download-analysis-btn" title="Скачать аналитику"><i class="fas fa-download"></i></a>{% endif %}<h5>Аналитика Яндекс</h5><pre>{{ analysis_y20 or 'Нет данных' }}</pre></div></div>
+                    <div class="col-md-4"><div class="analysis-block">{% if comp.analysis_g20_path %}<a href="{{ url_for('download_report', path=comp.analysis_g20_path) }}" class="download-analysis-btn" title="Скачать аналитику"><i class="fas fa-download"></i></a>{% endif %}<h5>Аналитика Google</h5><pre>{{ analysis_g20 or 'Нет данных' }}</pre></div></div>
+                    <div class="col-md-4"><div class="analysis-block">{% if comp.analysis_total20_path %}<a href="{{ url_for('download_report', path=comp.analysis_total20_path) }}" class="download-analysis-btn" title="Скачать аналитику"><i class="fas fa-download"></i></a>{% endif %}<h5>Аналитика общая</h5><pre>{{ analysis_total20 or 'Нет данных' }}</pre></div></div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="top10-charts" role="tabpanel" aria-labelledby="top10-tab">
+                <div class="chart-row">
+                    {% if comp.chart_y10_path %}
+                    <div class="chart-col"><div class="chart-container"><div style="position: relative;"><h5 class="fw-bold mb-2">Яндекс (ТОП-10)</h5><a href="{{ url_for('download_report', path=comp.chart_y10_path) }}" class="download-analysis-btn" title="Скачать диаграмму"><i class="fas fa-download"></i></a></div><img src="{{ url_for('user_data_file', filename=comp.chart_y10_path.split('user_data/')[1]) }}" alt="Яндекс ТОП-10" onclick="openModal(this)" style="cursor: pointer;"></div></div>
+                    {% endif %}
+                    {% if comp.chart_g10_path %}
+                    <div class="chart-col"><div class="chart-container"><div style="position: relative;"><h5 class="fw-bold mb-2">Google (ТОП-10)</h5><a href="{{ url_for('download_report', path=comp.chart_g10_path) }}" class="download-analysis-btn" title="Скачать диаграмму"><i class="fas fa-download"></i></a></div><img src="{{ url_for('user_data_file', filename=comp.chart_g10_path.split('user_data/')[1]) }}" alt="Google ТОП-10" onclick="openModal(this)" style="cursor: pointer;"></div></div>
+                    {% endif %}
+                    {% if comp.chart_total10_path %}
+                    <div class="chart-col"><div class="chart-container"><div style="position: relative;"><h5 class="fw-bold mb-2">Общая (ТОП-10)</h5><a href="{{ url_for('download_report', path=comp.chart_total10_path) }}" class="download-analysis-btn" title="Скачать диаграмму"><i class="fas fa-download"></i></a></div><img src="{{ url_for('user_data_file', filename=comp.chart_total10_path.split('user_data/')[1]) }}" alt="Общая ТОП-10" onclick="openModal(this)" style="cursor: pointer;"></div></div>
+                    {% endif %}
+                </div>
+                
+                <!-- СЕТКА ТОП-10 -->
+                {% if grid_y10_file1 or grid_y10_file2 or grid_g10_file1 or grid_g10_file2 %}
+                <div class="grid-section mb-4">
+                    <h3 class="mt-4 mb-3" style="color: var(--primary);">
+                        <i class="fas fa-th me-2"></i>Сетка тональности ТОП-10
+                    </h3>
+                    <div class="row g-4">
+                        <!-- Яндекс Файл 1 -->
+                        {% if grid_y10_file1 %}
+                        <div class="col-md-6">
+                            <div class="chart-container">
+                                <div style="position: relative;">
+                                    <h5 class="fw-bold mb-2" style="color: var(--primary);">
+                                        <i class="fab fa-yandex me-2"></i>Яндекс ТОП-10 — Файл 1
+                                    </h5>
+                                    <a href="{{ url_for('download_report', path=comp.grid_y10_path) }}" class="download-analysis-btn" style="top:0; right:0; background-color:var(--primary);" title="Скачать сетку">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </div>
+                                <div class="grid-image" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+                                    <img src="{{ grid_y10_file1 }}" alt="Сетка Яндекс ТОП-10 Файл 1" style="width: 100%; cursor: pointer;" onclick="openModal(this)">
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <!-- Яндекс Файл 2 -->
+                        {% if grid_y10_file2 %}
+                        <div class="col-md-6">
+                            <div class="chart-container">
+                                <div style="position: relative;">
+                                    <h5 class="fw-bold mb-2" style="color: var(--primary);">
+                                        <i class="fab fa-yandex me-2"></i>Яндекс ТОП-10 — Файл 2
+                                    </h5>
+                                    <a href="{{ url_for('download_report', path=comp.grid_y10_file2_path) }}" class="download-analysis-btn" style="top:0; right:0; background-color:var(--primary);" title="Скачать сетку">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </div>
+                                <div class="grid-image" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+                                    <img src="{{ grid_y10_file2 }}" alt="Сетка Яндекс ТОП-10 Файл 2" style="width: 100%; cursor: pointer;" onclick="openModal(this)">
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <!-- Google Файл 1 -->
+                        {% if grid_g10_file1 %}
+                        <div class="col-md-6">
+                            <div class="chart-container">
+                                <div style="position: relative;">
+                                    <h5 class="fw-bold mb-2" style="color: var(--primary);">
+                                        <i class="fab fa-google me-2"></i>Google ТОП-10 — Файл 1
+                                    </h5>
+                                    <a href="{{ url_for('download_report', path=comp.grid_g10_path) }}" class="download-analysis-btn" style="top:0; right:0; background-color:var(--primary);" title="Скачать сетку">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </div>
+                                <div class="grid-image" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+                                    <img src="{{ grid_g10_file1 }}" alt="Сетка Google ТОП-10 Файл 1" style="width: 100%; cursor: pointer;" onclick="openModal(this)">
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <!-- Google Файл 2 -->
+                        {% if grid_g10_file2 %}
+                        <div class="col-md-6">
+                            <div class="chart-container">
+                                <div style="position: relative;">
+                                    <h5 class="fw-bold mb-2" style="color: var(--primary);">
+                                        <i class="fab fa-google me-2"></i>Google ТОП-10 — Файл 2
+                                    </h5>
+                                    <a href="{{ url_for('download_report', path=comp.grid_g10_file2_path) }}" class="download-analysis-btn" style="top:0; right:0; background-color:var(--primary);" title="Скачать сетку">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </div>
+                                <div class="grid-image" style="border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+                                    <img src="{{ grid_g10_file2 }}" alt="Сетка Google ТОП-10 Файл 2" style="width: 100%; cursor: pointer;" onclick="openModal(this)">
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <h3 class="mt-4 mb-3" style="color: var(--primary);">Аналитика ТОП-10</h3>
+                <div class="row">
+                    <div class="col-md-4"><div class="analysis-block">{% if comp.analysis_y10_path %}<a href="{{ url_for('download_report', path=comp.analysis_y10_path) }}" class="download-analysis-btn" title="Скачать аналитику"><i class="fas fa-download"></i></a>{% endif %}<h5>Аналитика Яндекс</h5><pre>{{ analysis_y10 or 'Нет данных' }}</pre></div></div>
+                    <div class="col-md-4"><div class="analysis-block">{% if comp.analysis_g10_path %}<a href="{{ url_for('download_report', path=comp.analysis_g10_path) }}" class="download-analysis-btn" title="Скачать аналитику"><i class="fas fa-download"></i></a>{% endif %}<h5>Аналитика Google</h5><pre>{{ analysis_g10 or 'Нет данных' }}</pre></div></div>
+                    <div class="col-md-4"><div class="analysis-block">{% if comp.analysis_total10_path %}<a href="{{ url_for('download_report', path=comp.analysis_total10_path) }}" class="download-analysis-btn" title="Скачать аналитику"><i class="fas fa-download"></i></a>{% endif %}<h5>Аналитика общая</h5><pre>{{ analysis_total10 or 'Нет данных' }}</pre></div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <i class="fas fa-crown me-1" style="color: var(--accent);"></i> SERP Analysis Tool<br>
+            <small class="text-muted">Версия: {{ version }}</small>
+        </div>
+    </div>
+
+    <div class="modal fade" id="chartModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content" style="background: transparent; border: none;">
+                <div class="modal-body p-0 text-center"><img src="" id="modalChartImage" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Инициализация темы (функции в main.js)
+
+        // === КНОПКА РАЗВЕРНУТЬ/СВЕРНУТЬ ===
+        const baselineToggleBtn = document.getElementById('baselineToggleBtn');
+        const baselineForms = document.getElementById('baselineForms');
+        
+        if (baselineToggleBtn && baselineForms) {
+            baselineForms.addEventListener('show.bs.collapse', function() {
+                baselineToggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i> Свернуть';
+            });
+            
+            baselineForms.addEventListener('hide.bs.collapse', function() {
+                baselineToggleBtn.innerHTML = '<i class="fas fa-chevron-right"></i> Развернуть';
+            });
+        }
+
+        // === СТАРТОВЫЕ ПОКАЗАТЕЛИ ===
+        document.querySelectorAll('.baseline-form').forEach(form => {
+            const inputType = form.querySelector('.input-type');
+            const totalUrlsField = form.querySelector('.total-urls-field');
+            const totalUrlsInput = form.querySelector('.total-urls');
+            const inputs = form.querySelectorAll('input[name="client_site"], input[name="positive"], input[name="neutral"], input[name="negative"], input[name="irrelevant"]');
+            
+            // Получаем comparison_id из data атрибута
+            const comparisonId = form.dataset.comparisonId;
+            
+            // Функция обновления placeholder'ов и title
+            function updatePlaceholders(type) {
+                const placeholder = type === 'percentage' ? '25%' : '30';
+                const titleText = type === 'percentage' ? 'Введите процент (например: 25%)' : 'Введите количество URL (например: 30)';
+                inputs.forEach(input => {
+                    input.placeholder = placeholder;
+                    input.title = titleText;
+                });
+            }
+            
+            // Показываем/скрываем поле "Всего URL" и меняем подсказки
+            inputType.addEventListener('change', function() {
+                if (this.value === 'count') {
+                    totalUrlsField.style.display = 'block';
+                } else {
+                    totalUrlsField.style.display = 'none';
+                }
+                updatePlaceholders(this.value);
+            });
+            
+            // Инициализация placeholder'ов при загрузке
+            updatePlaceholders(inputType.value);
+            
+            // Функция сохранения данных
+            async function saveBaselineData() {
+                const formData = new FormData(form);
+                const data = {
+                    metric_type: form.dataset.type,
+                    input_type: formData.get('input_type'),
+                    total_urls: formData.get('total_urls'),
+                    client_site_value: formData.get('client_site'),
+                    positive_value: formData.get('positive'),
+                    neutral_value: formData.get('neutral'),
+                    negative_value: formData.get('negative'),
+                    irrelevant_value: formData.get('irrelevant')
+                };
+                
+                console.log('Saving baseline for comparison', comparisonId, data);
+                
+                try {
+                    const response = await fetch(`/save_baseline_metrics_comparison/${comparisonId}`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (!result.success) {
+                        alert('Ошибка сохранения: ' + result.error);
+                        return false;
+                    }
+                    console.log('Baseline saved successfully');
+                    return true;
+                } catch (e) {
+                    console.error('Error saving:', e);
+                    alert('Ошибка сохранения: ' + e);
+                    return false;
+                }
+            }
+            
+            // Флаг для отслеживания, была ли уже создана диаграмма
+            let chartCreated = false;
+            
+            // Функция генерации диаграммы
+            async function generateChart() {
+                console.log('generateChart called for:', form.dataset.type);
+                const generateBtn = form.querySelector('.generate-chart');
+                console.log('Found button:', generateBtn);
+                
+                // Определяем исходное содержимое кнопки
+                const originalBtnContent = chartCreated 
+                    ? '<i class="fas fa-sync-alt"></i> Обновить'
+                    : '<i class="fas fa-chart-bar"></i> Создать диаграмму';
+                
+                try {
+                    generateBtn.disabled = true;
+                    generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    
+                    // Сначала сохраняем данные
+                    const saved = await saveBaselineData();
+                    if (!saved) {
+                        generateBtn.innerHTML = originalBtnContent;
+                        generateBtn.disabled = false;
+                        return;
+                    }
+                    
+                    // Затем генерируем диаграмму
+                    const data = {
+                        metric_type: form.dataset.type
+                    };
+                    
+                    const response = await fetch(`/generate_baseline_chart_comparison/${comparisonId}`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        if (!form.parentElement) {
+                            console.error('form.parentElement is null');
+                            alert('Ошибка: parentElement не найден');
+                            return;
+                        }
+                        
+                        const container = form.parentElement.querySelector('[class*="chart-container"]');
+                        if (!container) {
+                            console.error('Container not found');
+                            alert('Ошибка: контейнер диаграммы не найден');
+                            return;
+                        }
+                        
+                        console.log('Container found:', container);
+                        const img = container.querySelector('img');
+                        const downloadLink = container.querySelector('.download-chart');
+                        
+                        // Добавляем timestamp к URL
+                        const chartUrl = result.chart_url + '?t=' + Date.now();
+                        if (img) img.src = chartUrl;
+                        if (downloadLink) downloadLink.href = chartUrl;
+                        container.style.display = 'block';
+                        
+                        // Отмечаем, что диаграмма создана
+                        chartCreated = true;
+                        
+                        // Меняем текст кнопки на "Обновить"
+                        generateBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Обновить';
+                        generateBtn.title = 'Обновить диаграмму';
+                        
+                        console.log('Chart updated successfully');
+                    } else {
+                        alert('Ошибка: ' + result.error);
+                        generateBtn.innerHTML = originalBtnContent;
+                    }
+                } catch (e) {
+                    console.error('Error:', e);
+                    alert('Ошибка генерации: ' + e);
+                    generateBtn.innerHTML = originalBtnContent;
+                } finally {
+                    generateBtn.disabled = false;
+                }
+            }
+            
+            // Кнопка "Создать диаграмму"
+            const generateBtn = form.querySelector('.generate-chart');
+            if (generateBtn) {
+                generateBtn.addEventListener('click', function(e) {
+                    console.log('Generate button clicked for:', form.dataset.type);
+                    e.preventDefault();
+                    generateChart();
+                });
+            }
+        });
+    </script>
+{% endblock %}

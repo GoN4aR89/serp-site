@@ -1,0 +1,510 @@
+{% extends 'base.html' %}
+
+{% block title %}Мои проекты — SERP Comparator{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/projects.css') }}?v={{ version }}">
+{% endblock %}
+
+{% block content %}
+<div class="projects-header">
+            <div class="projects-title">
+                <h1 class="page-title">
+                    <i class="fas fa-briefcase"></i>
+                    Мои проекты
+                </h1>
+                <p class="page-subtitle">Управление проектами и доступ к анализу выдачи</p>
+            </div>
+            <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#createProjectModal">
+                <i class="fas fa-plus me-2"></i>Создать проект
+            </button>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% if projects %}
+            <div class="projects-grid">
+                {% for project in projects %}
+                    <div class="project-card">
+                        <button type="button" class="btn btn-link btn-sm project-delete-btn" onclick="deleteProject({{ project.id }}, '{{ project.name }}')" title="Удалить проект">
+                            <i class="fas fa-times text-danger"></i>
+                        </button>
+                        <div class="project-header">
+                            <div class="project-icon">
+                                <i class="fas fa-folder-open"></i>
+                            </div>
+                            <div class="project-info">
+                                <h3 class="project-name">
+                                    {{ project.name }}
+                                    <button type="button" class="btn btn-link btn-sm p-0 ms-2" onclick="renameProject({{ project.id }}, '{{ project.name }}')" title="Переименовать проект">
+                                        <i class="fas fa-edit text-muted"></i>
+                                    </button>
+                                </h3>
+                                <p class="project-meta">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    Создан: {{ project.created_at.strftime('%d.%m.%Y') }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="project-stats">
+                            <div class="stat">
+                                <span class="stat-value">{{ project.comparisons|length }}</span>
+                                <span class="stat-label">сравнений</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value">{{ project.updated_at.strftime('%d.%m.%Y') }}</span>
+                                <span class="stat-label">обновлен</span>
+                            </div>
+                            {% if project.has_baseline_metrics() %}
+                            <div class="stat">
+                                <span class="stat-value"><i class="fas fa-chart-line text-success"></i></span>
+                                <span class="stat-label">стартовые метрики</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="project-actions">
+                            <a href="{{ url_for('project_detail', project_id=project.id) }}" class="btn btn-primary">
+                                <i class="fas fa-folder-open me-2"></i>Открыть
+                            </a>
+                            <button type="button" class="btn btn-outline btn-sm" onclick="viewBaselineMetrics({{ project.id }})" title="Просмотреть стартовые метрики">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline btn-sm" onclick="openBaselineModal({{ project.id }})" title="Изменить стартовые метрики">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-folder-open"></i>
+                </div>
+                <h3>У вас пока нет проектов</h3>
+                <p>Создайте первый проект, чтобы начать анализ поисковой выдачи</p>
+                <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#createProjectModal">
+                    <i class="fas fa-plus me-2"></i>Создать проект
+                </button>
+            </div>
+        {% endif %}
+
+    <!-- Create Project Modal -->
+    <div class="modal fade" id="createProjectModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus-circle me-2"></i>Создать новый проект
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ url_for('create_project') }}" method="POST">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="projectName" class="form-label">Название проекта</label>
+                            <input type="text" class="form-control form-control-lg" id="projectName" name="name" 
+                                   placeholder="Например: Анализ репутации Q1 2024" required maxlength="200">
+                            <div class="form-text">Максимум 200 символов</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check me-2"></i>Создать
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rename Project Modal -->
+    <div class="modal fade" id="renameProjectModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-edit me-2"></i>Переименовать проект
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="renameForm" method="POST">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="newProjectName" class="form-label">Новое название</label>
+                            <input type="text" class="form-control form-control-lg" id="newProjectName" name="name" 
+                                   required maxlength="200">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check me-2"></i>Сохранить
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Project Modal -->
+    <div class="modal fade" id="deleteProjectModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Удаление проекта
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Вы уверены, что хотите удалить проект <strong id="deleteProjectName"></strong>?</p>
+                    <p class="text-danger"><strong>Внимание:</strong> Все сравнения в проекте будут удалены безвозвратно.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <form id="deleteForm" method="POST" style="display: inline;">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-2"></i>Удалить
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно стартовых метрик -->
+    <div class="modal fade" id="baselineModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-chart-line me-2"></i>Стартовые метрики проекта
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="baselineForm" method="POST">
+                    <div class="modal-body baseline-form-container">
+                        <div class="row g-3">
+                            <!-- Яндекс ТОП-20 -->
+                            <div class="col-md-6">
+                                <div class="card baseline-card">
+                                    <div class="card-header yandex-header">
+                                        <i class="fab fa-yandex me-2"></i>Яндекс ТОП-20
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row g-1 mb-1">
+                                            <div class="col-7">
+                                                <label class="form-label small mb-0 text-muted">Тип ввода</label>
+                                                <select class="form-select form-select-sm" name="y20_input_type" id="y20_input_type" onchange="toggleTotalUrls('y20')">
+                                                    <option value="percentage">Проценты (%)</option>
+                                                    <option value="count">Количество URL</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-5" id="y20_total_urls_container" style="display:none;">
+                                                <label class="form-label small mb-0 text-muted">Всего URL</label>
+                                                <input type="number" class="form-control form-control-sm" name="y20_total_urls" value="120" min="10" step="10">
+                                            </div>
+                                        </div>
+                                        <div class="row g-1">
+                                            <div class="col">
+                                                <label class="form-label small mb-0 text-muted">Дом.сайт</label>
+                                                <input type="number" step="0.01" class="form-control form-control-sm" name="y20_client_site" placeholder="%">
+                                            </div>
+                                            <div class="col">
+                                                <label class="form-label small mb-0 text-muted">Позитив</label>
+                                                <input type="number" step="0.01" class="form-control form-control-sm" name="y20_positive" placeholder="%">
+                                            </div>
+                                            <div class="col">
+                                                <label class="form-label small mb-0 text-muted">Нейтрал</label>
+                                                <input type="number" step="0.01" class="form-control form-control-sm" name="y20_neutral" placeholder="%">
+                                            </div>
+                                            <div class="col">
+                                                <label class="form-label small mb-0 text-muted">Негатив</label>
+                                                <input type="number" step="0.01" class="form-control form-control-sm" name="y20_negative" placeholder="%">
+                                            </div>
+                                            <div class="col">
+                                                <label class="form-label small mb-0 text-muted">Нерелевант</label>
+                                                <input type="number" step="0.01" class="form-control form-control-sm" name="y20_irrelevant" placeholder="%">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Яндекс ТОП-10 -->
+                            <div class="col-md-6">
+                                <div class="card baseline-card">
+                                    <div class="card-header yandex-header">
+                                        <i class="fab fa-yandex me-2"></i>Яндекс ТОП-10
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row g-1 mb-1">
+                                            <div class="col-7">
+                                                <label class="form-label small mb-0 text-muted">Тип ввода</label>
+                                                <select class="form-select form-select-sm" name="y10_input_type" id="y10_input_type" onchange="toggleTotalUrls('y10')">
+                                                    <option value="percentage">Проценты (%)</option>
+                                                    <option value="count">Количество URL</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-5" id="y10_total_urls_container" style="display:none;">
+                                                <label class="form-label small mb-0 text-muted">Всего URL</label>
+                                                <input type="number" class="form-control form-control-sm" name="y10_total_urls" value="60" min="10" step="10">
+                                            </div>
+                                        </div>
+                                        <div class="row g-1">
+                                            <div class="col">
+                                                <label class="form-label small mb-0 text-muted">Дом.сайт</label>
+                                                <input type="number" step="0.01" class="form-control form-control-sm" name="y10_client_site" placeholder="%">
+                                            </div>
+                                            <div class="col">
+                                                <label class="form-label small mb-0 text-muted">Позитив</label>
+                                                <input type="number" step="0.01" class="form-control form-control-sm" name="y10_positive" placeholder="%">
+                                            </div>
+                                            <div class="col">
+                                                <label class="form-label small mb-0 text-muted">Нейтрал</label>
+                                                <input type="number" step="0.01" class="form-control form-control-sm" name="y10_neutral" placeholder="%">
+                                            </div>
+                                            <div class="col">
+                                                <label class="form-label small mb-0 text-muted">Негатив</label>
+                                                <input type="number" step="0.01" class="form-control form-control-sm" name="y10_negative" placeholder="%">
+                                            </div>
+                                            <div class="col">
+                                                <label class="form-label small mb-0 text-muted">Нерелевант</label>
+                                                <input type="number" step="0.01" class="form-control form-control-sm" name="y10_irrelevant" placeholder="%">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Google ТОП-20 -->
+                            <div class="col-md-6">
+                                <div class="card baseline-card">
+                                    <div class="card-header google-header">
+                                        <i class="fab fa-google me-2"></i>Google ТОП-20
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row g-1 mb-1">
+                                            <div class="col-7">
+                                                <label class="form-label small mb-0 text-muted">Тип ввода</label>
+                                                <select class="form-select form-select-sm" name="g20_input_type" id="g20_input_type" onchange="toggleTotalUrls('g20')">
+                                                    <option value="percentage">Проценты (%)</option>
+                                                    <option value="count">Количество URL</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-5" id="g20_total_urls_container" style="display:none;">
+                                                <label class="form-label small mb-0 text-muted">Всего URL</label>
+                                                <input type="number" class="form-control form-control-sm" name="g20_total_urls" value="120" min="10" step="10">
+                                            </div>
+                                        </div>
+                                        <div class="row g-1">
+                                            <div class="col">
+                                                <label class="form-label small mb-0 text-muted">Дом.сайт</label>
+                                                <input type="number" step="0.01" class="form-control form-control-sm" name="g20_client_site" placeholder="%">
+                                            </div>
+                                            <div class="col">
+                                                <label class="form-label small mb-0 text-muted">Позитив</label>
+                                                <input type="number" step="0.01" class="form-control form-control-sm" name="g20_positive" placeholder="%">
+                                            </div>
+                                            <div class="col">
+                                                <label class="form-label small mb-0 text-muted">Нейтрал</label>
+                                                <input type="number" step="0.01" class="form-control form-control-sm" name="g20_neutral" placeholder="%">
+                                            </div>
+                                            <div class="col">
+                                                <label class="form-label small mb-0 text-muted">Негатив</label>
+                                                <input type="number" step="0.01" class="form-control form-control-sm" name="g20_negative" placeholder="%">
+                                            </div>
+                                            <div class="col">
+                                                <label class="form-label small mb-0 text-muted">Нерелевант</label>
+                                                <input type="number" step="0.01" class="form-control form-control-sm" name="g20_irrelevant" placeholder="%">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Google ТОП-10 -->
+                            <div class="col-md-6">
+                                <div class="card baseline-card">
+                                    <div class="card-header google-header">
+                                        <i class="fab fa-google me-2"></i>Google ТОП-10
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row g-1 mb-1">
+                                            <div class="col-7">
+                                                <label class="form-label small mb-0 text-muted">Тип ввода</label>
+                                                <select class="form-select form-select-sm" name="g10_input_type" id="g10_input_type" onchange="toggleTotalUrls('g10')">
+                                                    <option value="percentage">Проценты (%)</option>
+                                                    <option value="count">Количество URL</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-5" id="g10_total_urls_container" style="display:none;">
+                                                <label class="form-label small mb-0 text-muted">Всего URL</label>
+                                                <input type="number" class="form-control form-control-sm" name="g10_total_urls" value="60" min="10" step="10">
+                                            </div>
+                                        </div>
+                                        <div class="row g-1">
+                                            <div class="col">
+                                                <label class="form-label small mb-0 text-muted">Дом.сайт</label>
+                                                <input type="number" step="0.01" class="form-control form-control-sm" name="g10_client_site" placeholder="%">
+                                            </div>
+                                            <div class="col">
+                                                <label class="form-label small mb-0 text-muted">Позитив</label>
+                                                <input type="number" step="0.01" class="form-control form-control-sm" name="g10_positive" placeholder="%">
+                                            </div>
+                                            <div class="col">
+                                                <label class="form-label small mb-0 text-muted">Нейтрал</label>
+                                                <input type="number" step="0.01" class="form-control form-control-sm" name="g10_neutral" placeholder="%">
+                                            </div>
+                                            <div class="col">
+                                                <label class="form-label small mb-0 text-muted">Негатив</label>
+                                                <input type="number" step="0.01" class="form-control form-control-sm" name="g10_negative" placeholder="%">
+                                            </div>
+                                            <div class="col">
+                                                <label class="form-label small mb-0 text-muted">Нерелевант</label>
+                                                <input type="number" step="0.01" class="form-control form-control-sm" name="g10_irrelevant" placeholder="%">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Сохранить все метрики
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно просмотра стартовых метрик -->
+    <div class="modal fade" id="viewBaselineModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-chart-line me-2"></i>Стартовые метрики
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3" id="viewBaselineContent">
+                        <!-- Контент загружается через JavaScript -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function renameProject(projectId, currentName) {
+        document.getElementById('renameForm').action = '/project/' + projectId + '/rename';
+        document.getElementById('newProjectName').value = currentName;
+        new bootstrap.Modal(document.getElementById('renameProjectModal')).show();
+    }
+    
+    function deleteProject(projectId, projectName) {
+        document.getElementById('deleteForm').action = '/project/' + projectId + '/delete';
+        document.getElementById('deleteProjectName').textContent = projectName;
+        new bootstrap.Modal(document.getElementById('deleteProjectModal')).show();
+    }
+    
+    function openBaselineModal(projectId) {
+        document.getElementById('baselineForm').action = '/project/' + projectId + '/baseline';
+        new bootstrap.Modal(document.getElementById('baselineModal')).show();
+    }
+
+    // Просмотр стартовых метрик
+    async function viewBaselineMetrics(projectId) {
+        try {
+            const response = await fetch('/project/' + projectId + '/baseline');
+            const data = await response.json();
+            
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+            
+            const groups = [
+                { key: 'y20', title: 'Яндекс ТОП-20', icon: 'fa-yandex', headerClass: 'yandex-header-bg' },
+                { key: 'y10', title: 'Яндекс ТОП-10', icon: 'fa-yandex', headerClass: 'yandex-header-bg' },
+                { key: 'g20', title: 'Google ТОП-20', icon: 'fa-google', headerClass: 'google-header-bg' },
+                { key: 'g10', title: 'Google ТОП-10', icon: 'fa-google', headerClass: 'google-header-bg' }
+            ];
+            
+            const sentimentNames = {
+                'client_site': 'Сайт клиента',
+                'positive': 'Позитив',
+                'neutral': 'Нейтрал',
+                'negative': 'Негатив',
+                'irrelevant': 'Нерелевант'
+            };
+            
+            let html = '';
+            
+            for (const group of groups) {
+                const metrics = data[group.key];
+                if (!metrics) continue;
+                
+                const hasValues = Object.values(metrics).some(v => v > 0);
+                if (!hasValues && metrics.input_type === 'percentage' && metrics.total_urls === 0) continue;
+                
+                const unit = metrics.input_type === 'count' ? 'шт.' : '%';
+                
+                html += `
+                    <div class="col-md-6">
+                        <div class="card baseline-view-card">
+                            <div class="card-header ${group.headerClass}">
+                                <i class="fab ${group.icon} me-2"></i>${group.title}
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-sm baseline-table">
+                                    <tbody>
+                                        <tr><td>Сайт клиента</td><td class="text-end sentiment-client">${metrics.client_site}${unit}</td></tr>
+                                        <tr><td>Позитив</td><td class="text-end sentiment-positive">${metrics.positive}${unit}</td></tr>
+                                        <tr><td>Нейтрал</td><td class="text-end sentiment-neutral">${metrics.neutral}${unit}</td></tr>
+                                        <tr><td>Негатив</td><td class="text-end sentiment-negative">${metrics.negative}${unit}</td></tr>
+                                        <tr><td>Нерелевант</td><td class="text-end sentiment-irrelevant">${metrics.irrelevant}${unit}</td></tr>
+                                    </tbody>
+                                </table>
+                                ${metrics.input_type === 'count' ? `<small class="text-muted"><i class="fas fa-link me-1"></i>Всего URL: ${metrics.total_urls}</small>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (html === '') {
+                html = '<div class="col-12 text-center text-muted">Стартовые метрики не заполнены</div>';
+            }
+            
+            document.getElementById('viewBaselineContent').innerHTML = html;
+            new bootstrap.Modal(document.getElementById('viewBaselineModal')).show();
+            
+        } catch (error) {
+            console.error('Error loading baseline metrics:', error);
+            alert('Ошибка при загрузке метрик');
+        }
+    }
+</script>
+{% endblock %}

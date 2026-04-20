@@ -1,0 +1,239 @@
+{% extends 'base_auth.html' %}
+
+{% block title %}SERP Comparator — Профессиональный анализ выдачи{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}?v={{ version }}">
+{% endblock %}
+
+{% block content %}
+    <!-- Header -->
+    <header class="landing-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-chart-line"></i>
+                    <span>SERP Comparator</span>
+                </div>
+                <div class="header-actions">
+                    <a href="{{ url_for('info') }}" class="btn btn-outline">
+                        <i class="fas fa-info-circle me-1"></i>Инфо
+                    </a>
+                    <a href="{{ url_for('feedback') }}" class="btn btn-outline">
+                        <i class="fas fa-comment me-1"></i>Обратная связь
+                    </a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline">Войти</a>
+                    <a href="{{ url_for('register') }}" class="btn btn-primary">Регистрация</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="hero-title">Профессиональный анализ<br>поисковой выдачи</h1>
+                    <p class="hero-subtitle">
+                        Автоматизированный инструмент для анализа SERP с интеллектуальной обработкой тональности контента. 
+                        Отслеживайте изменения в ТОП-20 и ТОП-10 Яндекс и Google, оценивайте репутацию и динамику позиций.
+                    </p>
+                    <div class="hero-cta">
+                        <a href="#demo" class="btn btn-primary btn-lg">
+                            <i class="fas fa-play me-2"></i>Попробовать бесплатно
+                        </a>
+                        <span class="cta-note">Без регистрации</span>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="hero-stats">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h4>ИИ-анализ тональности</h4>
+                                <p>Автоматическая классификация позитивного, негативного и нейтрального контента</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h4>Детальная аналитика</h4>
+                                <p>Индексы стабильности, изменчивости, релевантности и динамики SERP</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-file-export"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h4>Экспорт отчетов</h4>
+                                <p>Excel, PNG, PowerPoint — профессиональные презентации результатов</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section id="demo" class="demo-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Демо-сравнение</h2>
+                <p>Загрузите два файла выдачи и получите анализ без регистрации. <br>
+                <small class="text-muted">Демо доступно для одного сравнения. Для сохранения истории необходима регистрация.</small></p>
+            </div>
+            
+            <div class="demo-form-wrapper">
+                <form id="demo-form" class="upload-form" enctype="multipart/form-data">
+                    <div class="upload-grid">
+                        <div class="upload-box" id="drop-zone-1">
+                            <input type="file" id="file1" name="file1" accept=".xlsx,.xls,.csv" required>
+                            <div class="upload-content">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <h4>Первая дата</h4>
+                                <p>Перетащите файл или нажмите для выбора</p>
+                                <span class="file-name" id="file1-name"></span>
+                            </div>
+                        </div>
+                        <div class="upload-connector">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <div class="upload-box" id="drop-zone-2">
+                            <input type="file" id="file2" name="file2" accept=".xlsx,.xls,.csv" required>
+                            <div class="upload-content">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <h4>Вторая дата</h4>
+                                <p>Перетащите файл или нажмите для выбора</p>
+                                <span class="file-name" id="file2-name"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="upload-actions">
+                        <button type="submit" class="btn btn-primary btn-lg" id="compare-btn">
+                            <i class="fas fa-analytics me-2"></i>Сравнить выдачу
+                        </button>
+                    </div>
+                    
+                    <div id="demo-progress" class="progress-wrapper" style="display: none;">
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <p class="progress-text">Анализ данных...</p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Возможности платформы</h2>
+                <p>Профессиональный инструментарий для анализа поисковой выдачи</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h4>Анализ Яндекс и Google</h4>
+                    <p>Поддержка обеих поисковых систем с раздельной аналитикой для ТОП-20 и ТОП-10</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-smile"></i>
+                    </div>
+                    <h4>Тональность контента</h4>
+                    <p>ИИ-классификация позитивного, негативного, нейтрального и нерелевантного контента</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-balance-scale"></i>
+                    </div>
+                    <h4>Сравнение периодов</h4>
+                    <p>Отслеживание динамики изменений во времени с детальным анализом сдвигов</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-th"></i>
+                    </div>
+                    <h4>Визуальные сетки</h4>
+                    <p>Наглядное представление тональности ТОП-10 в виде цветных сеток</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <h4>Диаграммы и графики</h4>
+                    <p>Визуализация распределения тональности и динамики изменений</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <h4>Управление проектами</h4>
+                    <p>Группировка сравнений по проектам с отдельной историей для каждого</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-powerpoint"></i>
+                    </div>
+                    <h4>PowerPoint отчеты</h4>
+                    <p>Автоматическая генерация профессиональных презентаций результатов</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h4>Сохранение истории</h4>
+                    <p>Постоянный доступ к результатам всех проведенных анализов</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Готовы к профессиональному анализу?</h2>
+                <p>Создайте аккаунт и получите доступ к полному функционалу платформы</p>
+                <div class="cta-buttons">
+                    <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>Создать аккаунт
+                    </a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-sign-in-alt me-2"></i>Уже есть аккаунт
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-chart-line"></i>
+                    <span>SERP Comparator</span>
+                </div>
+                <p class="footer-copy"> 2024 SERP Comparator. Профессиональный анализ поисковой выдачи.</p>
+            </div>
+        </div>
+    </footer>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/landing.js') }}"></script>
+{% endblock %}

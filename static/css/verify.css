@@ -1,0 +1,111 @@
+/* ============================================
+   VERIFY STYLES - Стили для verify.html
+   ============================================ */
+
+* { box-sizing: border-box; }
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-gradient);
+    color: var(--text-color);
+    padding: 2rem 1rem;
+    transition: background 0.3s, color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 500px;
+    width: 100%;
+    margin: auto;
+}
+
+.card {
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 2rem;
+    border: none;
+    transition: transform 0.3s;
+}
+
+.card:hover { transform: translateY(-5px); }
+
+h1 {
+    color: var(--primary);
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    border-radius: 30px;
+    padding: 12px 30px;
+    font-weight: 600;
+    width: 100%;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+    transform: scale(1.02);
+}
+
+.theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: var(--card-bg);
+    border-radius: 30px;
+    padding: 8px 16px;
+    box-shadow: var(--box-shadow);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--primary);
+    transition: all 0.2s;
+}
+
+.theme-toggle:hover { transform: scale(1.05); }
+.theme-toggle i { font-size: 1.2rem; color: var(--accent); }
+
+.code-input {
+    text-align: center;
+    font-size: 2rem;
+    letter-spacing: 0.5rem;
+    font-weight: 600;
+    border-radius: 12px;
+    border: 2px solid var(--primary);
+    padding: 1rem;
+}
+
+.code-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(61, 133, 198, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    body { padding: 1rem; }
+    .card { padding: 1.5rem; border-radius: 12px; }
+    h1 { font-size: 1.5rem; margin-bottom: 1.25rem; }
+    h1 i { margin-right: 0.5rem; }
+    .code-input { font-size: 1.75rem; letter-spacing: 0.3rem; padding: 0.75rem; }
+    .btn-primary { padding: 0.75rem; font-size: 0.95rem; }
+    .theme-toggle { top: 15px; right: 15px; padding: 6px 12px; font-size: 0.85rem; }
+    .theme-toggle span { display: none; }
+}
+
+@media (max-width: 480px) {
+    body { padding: 0.5rem; }
+    .card { padding: 1.25rem; border-radius: 10px; }
+    h1 { font-size: 1.25rem; margin-bottom: 1rem; }
+    .code-input { font-size: 1.5rem; letter-spacing: 0.2rem; padding: 0.6rem; }
+    .btn-primary { padding: 0.65rem; font-size: 0.9rem; }
+}

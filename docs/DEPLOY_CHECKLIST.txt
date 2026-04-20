@@ -1,0 +1,78 @@
+# Список файлов для деплоя на сервер
+# ================================
+
+## ✅ ОБЯЗАТЕЛЬНО включить:
+
+### Python-код:
+- app.py
+- comparator.py
+- utils.py
+- constants.py
+- init_db.py
+- migrate_db.py
+- requirements.txt
+
+### Конфигурация:
+- .env (с вашими реальными настройками email и БД!)
+- .env.example (для справки)
+
+### Шаблоны и стили:
+- templates/ (все HTML файлы)
+- static/css/ (все CSS файлы)
+- static/js/ (все JS файлы)
+- static/img/ (изображения)
+
+### Пустые папки (создать на сервере):
+- uploads/
+- user_data/
+- instance/
+
+## ❌ НЕ включать:
+- __pycache__/ (кэш Python)
+- *.pyc файлы
+- *.db файлы (база создастся заново)
+- docs/ (документация не нужна для работы)
+- .git/ (если есть)
+- Локальные файлы в uploads/ и user_data/
+
+## 🔧 Что проверить в .env перед деплоем:
+
+SECRET_KEY=сгенерировать-новый-случайный-ключ-32-символа
+
+# SMTP для отправки кодов (ВАЖНО!)
+MAIL_SERVER=smtp.yandex.ru
+MAIL_PORT=465
+MAIL_USERNAME=your-real-email@yandex.ru
+MAIL_PASSWORD=your-real-app-password
+MAIL_USE_SSL=True
+
+# Администратор (ВАЖНО!)
+ADMIN_EMAIL=your-admin-email@example.com
+
+# База данных
+DATABASE_URL=sqlite:///instance/serp_comparator.db
+
+## 📦 Команды для создания архива:
+
+# Linux/Mac:
+zip -r serp_deploy.zip app.py comparator.py utils.py constants.py init_db.py migrate_db.py requirements.txt .env .env.example templates/ static/ -x "*.pyc" -x "__pycache__/*" -x "*.db"
+
+# Или через tar:
+tar -czvf serp_deploy.tar.gz --exclude='*.pyc' --exclude='__pycache__' --exclude='*.db' --exclude='docs' app.py comparator.py utils.py constants.py init_db.py migrate_db.py requirements.txt .env .env.example templates/ static/
+
+## 🚀 После загрузки на сервер:
+
+1. Распаковать архив
+2. Создать папки:
+   mkdir uploads user_data instance
+3. Установить зависимости:
+   pip install -r requirements.txt
+4. Инициализировать БД:
+   python init_db.py
+5. Запустить:
+   python app.py
+
+## 📝 Примечание:
+- .env должен содержать РЕАЛЬНЫЕ данные email для работы верификации
+- Не забудьте поменять SECRET_KEY на production!
+- На сервере должен быть Python 3.8+

@@ -1,0 +1,95 @@
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="logo">
+            <i class="fas fa-chart-line"></i>
+            <span>SERP Comparator</span>
+        </div>
+        <button class="theme-toggle-btn" id="themeToggle">
+            <i class="fas fa-sun" id="themeIconSun" style="display: none;"></i>
+            <i class="fas fa-moon" id="themeIconMoon"></i>
+        </button>
+    </div>
+    
+    <nav class="sidebar-nav">
+        {% if session.user_id %}
+            <div class="nav-section">
+                <div class="nav-section-title">Проекты</div>
+                <a href="{{ url_for('projects') }}" class="nav-link {% if not project %}active{% endif %}">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Все проекты</span>
+                </a>
+                {% if project %}
+                    <a href="{{ url_for('index', project_id=project.id) }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <span>Загрузка</span>
+                    </a>
+                    <a href="{{ url_for('profile', project_id=project.id) }}" class="nav-link {% if request.endpoint == 'profile' %}active{% endif %}">
+                        <i class="fas fa-history"></i>
+                        <span>История</span>
+                    </a>
+                    {# В будущем добавить: #}
+                    {# <a href="#" class="nav-link"> #}
+                    {#     <i class="fas fa-table"></i> #}
+                    {#     <span>Таблицы</span> #}
+                    {# </a> #}
+                    {# <a href="#" class="nav-link"> #}
+                    {#     <i class="fas fa-file-powerpoint"></i> #}
+                    {#     <span>Отчеты PPTX</span> #}
+                    {# </a> #}
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="nav-section">
+                <div class="nav-section-title">Навигация</div>
+                <a href="{{ url_for('landing') }}" class="nav-link {% if request.endpoint == 'landing' %}active{% endif %}">
+                    <i class="fas fa-home"></i>
+                    <span>Главная</span>
+                </a>
+                <a href="{{ url_for('login') }}" class="nav-link {% if request.endpoint == 'login' %}active{% endif %}">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Вход</span>
+                </a>
+                <a href="{{ url_for('register') }}" class="nav-link {% if request.endpoint == 'register' %}active{% endif %}">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Регистрация</span>
+                </a>
+            </div>
+        {% endif %}
+        
+        <div class="nav-section">
+            <div class="nav-section-title">Помощь</div>
+            <a href="{{ url_for('feedback') }}" class="nav-link {% if request.endpoint == 'feedback' %}active{% endif %}">
+                <i class="fas fa-comment"></i>
+                <span>Обратная связь</span>
+            </a>
+            <a href="{{ url_for('info') }}" class="nav-link {% if request.endpoint == 'info' %}active{% endif %}">
+                <i class="fas fa-info-circle"></i>
+                <span>Инфо</span>
+            </a>
+            {% if is_admin %}
+                <a href="{{ url_for('admin_feedback') }}" class="nav-link admin-link {% if request.endpoint == 'admin_feedback' %}active{% endif %}">
+                    <i class="fas fa-envelope-open-text"></i>
+                    <span>Сообщения</span>
+                </a>
+            {% endif %}
+        </div>
+    </nav>
+    
+    {% if session.user_id %}
+        <div class="nav-section account-section">
+            <div class="user-email">
+                <i class="fas fa-user-circle"></i>
+                {{ session.user_email }}
+            </div>
+            <div class="account-actions">
+                <a href="{{ url_for('logout') }}" class="nav-link logout-link">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Выйти</span>
+                </a>
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    {% endif %}
+</aside>

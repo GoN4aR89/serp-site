@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Управление отзывами{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin_feedback.css') }}?v={{ version }}">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-comments me-2" style="color: #ff9900;"></i>Обратная связь</h1>
+    {% if feedbacks %}
+    <form action="{{ url_for('clear_feedback') }}" method="post" onsubmit="return confirm('Вы уверены, что хотите удалить все сообщения? Это действие необратимо.');">
+        <button type="submit" class="btn btn-danger">Очистить всё</button>
+    </form>
+    {% endif %}
+</div>
+
+{% if feedbacks %}
+    <div class="list-group">
+        {% for fb in feedbacks %}
+        <div class="feedback-item">
+            <div class="feedback-header">
+                <div>
+                    <span class="feedback-email">{{ fb.user_email or 'Аноним' }}</span>
+                    <span class="badge 
+                        {% if fb.status == 'new' %}badge-new
+                        {% elif fb.status == 'read' %}badge-read
+                        {% else %}badge-replied{% endif %} ms-2">
+                        {{ {'new':'Новый','read':'Прочитано','replied':'Отвечено'}[fb.status] }}
+                    </span>
+                </div>
+                <div class="feedback-actions">
+                    <a href="{{ url_for('update_feedback_status', fb_id=fb.id, status='read') }}" class="btn btn-sm btn-secondary">Прочитано</a>
+                    <a href="{{ url_for('update_feedback_status', fb_id=fb.id, status='replied') }}" class="btn btn-sm btn-success">Отвечено</a>
+                    <form action="{{ url_for('delete_feedback', fb_id=fb.id) }}" method="post" style="display: inline;" onsubmit="return confirm('Удалить это сообщение?');">
+                        <button type="submit" class="btn btn-sm btn-danger" title="Удалить">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="feedback-message">{{- fb.message -}}</div>
+            <div class="feedback-date">
+                {{ fb.created_at.strftime('%d.%m.%Y %H:%M') }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="alert alert-info">Пока нет отзывов.</p>
+{% endif %}
+{% endblock %}

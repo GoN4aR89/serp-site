@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Обратная связь{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/feedback.css') }}?v={{ version }}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="feedback-card">
+        <h1><i class="fas fa-comment-dots"></i>Обратная связь</h1>
+        <p class="mb-4">Если у вас есть предложения по улучшению, сообщите нам.</p>
+
+        <form method="post">
+            <div class="mb-4">
+                <label for="message" class="form-label fw-semibold">Ваше сообщение</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-pencil-alt"></i></span>
+                    <textarea class="form-control" id="message" name="message" rows="5" required placeholder="Напишите здесь..."></textarea>
+                </div>
+            </div>
+
+            {% if not session.user_id %}
+            <div class="mb-4">
+                <label for="email" class="form-label fw-semibold">Ваш email</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                    <input type="email" class="form-control" id="email" name="email" required placeholder="example@mail.ru">
+                </div>
+                <small class="text-muted mt-1 d-block">Укажите email, чтобы мы могли ответить</small>
+            </div>
+            {% endif %}
+
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-paper-plane me-2"></i>Отправить
+            </button>
+        </form>
+    </div>
+    <div class="footer">
+        <i class="fas fa-cog me-1"></i> SERP Analysis Tool<br>
+        <small class="text-muted">Версия: {{ version }}</small>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,13 @@
+<div class="site-header">
+    {% if session.user_id %}
+        <span class="user-email">{{ session.user_email }}</span>
+        <a href="{{ url_for('logout') }}" class="header-button">
+            <i class="fas fa-sign-out-alt"></i><span>Выйти</span>
+        </a>
+    {% endif %}
+    <div class="header-button theme-button" id="themeToggle">
+        <i class="fas fa-sun" id="themeIconSun" style="display: none;"></i>
+        <i class="fas fa-moon" id="themeIconMoon"></i>
+        <span class="full-text">Тёмная тема</span>
+    </div>
+</div>

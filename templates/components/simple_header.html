@@ -1,0 +1,16 @@
+<div class="site-header">
+    <a href="{{ url_for('landing') }}" class="header-button">
+        <i class="fas fa-home"></i><span>Главная</span>
+    </a>
+    <a href="{{ url_for('login') }}" class="header-button">
+        <i class="fas fa-sign-in-alt"></i><span>Вход</span>
+    </a>
+    <a href="{{ url_for('register') }}" class="header-button">
+        <i class="fas fa-user-plus"></i><span>Регистрация</span>
+    </a>
+    <div class="header-button theme-button" id="themeToggle">
+        <i class="fas fa-sun" id="themeIconSun" style="display: none;"></i>
+        <i class="fas fa-moon" id="themeIconMoon"></i>
+        <span id="themeText">Тёмная тема</span>
+    </div>
+</div>

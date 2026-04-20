@@ -1,0 +1,35 @@
+<div class="toast-container">
+    {% for category, message in messages %}
+        <div class="toast toast-{{ 'success' if category == 'success' else 'danger' if category == 'error' else 'info' }}" role="alert" data-autohide="true">
+            <div class="toast-body">
+                {% if category == 'success' %}
+                    <i class="fas fa-check-circle" style="color: #28a745;"></i>
+                {% elif category == 'error' %}
+                    <i class="fas fa-exclamation-circle" style="color: #dc3545;"></i>
+                {% else %}
+                    <i class="fas fa-info-circle" style="color: var(--primary);"></i>
+                {% endif %}
+                <span>{{ message }}</span>
+                <button type="button" class="toast-close" onclick="this.parentElement.parentElement.remove()">&times;</button>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+    // Авто-скрытие toast уведомлений через 3 секунды
+    document.addEventListener('DOMContentLoaded', function() {
+        const toasts = document.querySelectorAll('.toast[data-autohide="true"]');
+        toasts.forEach(toast => {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateX(0)';
+            toast.style.transition = 'all 0.3s ease';
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        });
+    });
+</script>
