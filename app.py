@@ -1,7 +1,6 @@
 import os
 from io import BytesIO
 import uuid
-
 import shutil
 import logging
 import secrets
@@ -17,7 +16,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from comparator import SERPComparatorWithSentiment, add_rounded_corners_to_image
 import pandas as pd
 import matplotlib.pyplot as plt
-from io import BytesIO
 from openpyxl.styles import Alignment, PatternFill, Font
 from openpyxl.utils import get_column_letter
 from flask_sqlalchemy import SQLAlchemy
