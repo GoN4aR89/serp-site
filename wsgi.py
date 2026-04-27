@@ -1,4 +1,3 @@
-import os
 from app import app, db
 
 # Create database tables on startup
