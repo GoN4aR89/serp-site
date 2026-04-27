@@ -19,4 +19,4 @@ ENV PYTHONUNBUFFERED=1
 EXPOSE 5000
 
 # Команда запуска
-CMD ["gunicorn", "-b", "0.0.0.0:5000", "--workers", "2", "--timeout", "120", "app:app"]
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "--workers", "2", "--timeout", "120", "wsgi:app"]
