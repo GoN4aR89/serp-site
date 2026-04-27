@@ -69,6 +69,10 @@ def inject_common():
 
 db = SQLAlchemy(app)
 
+# Create database tables
+with app.app_context():
+    db.create_all()
+
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['PERMANENT_FOLDER'], exist_ok=True)
 
